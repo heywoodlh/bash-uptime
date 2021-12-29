@@ -74,9 +74,19 @@ ping_check() {
 		do
 			if [[ ${ping_silent} == "true" ]]
 			then
-				ping ${ping_options} ${host} >/dev/null || echo "$(date --iso-860=seconds): Host ${host} unresponsive to ping"
+				if ping ${ping_options} ${host} >/dev/null
+				then
+					echo "$(date --iso-860=seconds): UP Host ${host} responded to ping"
+				else
+					echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping"
+				fi
 			else
-				ping ${ping_options} ${host} || echo "$(date --iso-860=seconds): Host ${host} unresponsive to ping"
+				if ping ${ping_options} ${host}
+				then
+					echo "$(date --iso-860=seconds): UP Host ${host} responsive to ping"
+				else
+					echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping"
+				fi
 			fi
 		done
 	fi	
@@ -94,9 +104,19 @@ curl_check() {
 		do
 			if [[ ${curl_silent} == "true" ]]
 			then
-				curl ${curl_options} "${url}" > /dev/null || echo "$(date --iso-860=seconds): URL ${url} unresponsive to curl"
+				if curl ${curl_options} "${url}" > /dev/null
+				then
+					echo "$(date --iso-860=seconds): UP URL ${url} responsive to curl"
+				else
+					echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl"
+				fi
 			else	
-				curl ${curl_options} "${url}" || echo "$(date --iso-860=seconds): URL ${url} unresponsive to curl"
+				if curl ${curl_options} "${url}" 
+				then
+					echo "$(date --iso-860=seconds): UP URL ${url} responsive to curl"
+				else
+					echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl"
+				fi
 			fi	
 		done
 	fi	
