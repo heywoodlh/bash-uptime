@@ -33,5 +33,5 @@ docker run -it -v /tmp/uptime.yaml:/app/uptime.yaml heywoodlh/bash-uptime
 Create a cron that runs every hour that will send a notification via Gotify's CLI when one of your monitored hosts is down. 
 
 ```
-0 * * * * gotify push $(docker run -it -v /tmp/uptime.yaml:/app/uptime.yaml heywoodlh/bash-uptime)
+0 * * * * gotify push $(docker run -it -v /tmp/uptime.yaml:/app/uptime.yaml heywoodlh/bash-uptime | grep DOWN)
 ```
