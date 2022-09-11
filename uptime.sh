@@ -33,7 +33,6 @@ else
 	[[ -e ${UPTIME_CONF} ]] || { echo "${UPTIME_CONF} file not found" && error="true"; }
 fi
 
-
 ## Parse yaml config file
 parse_yaml() {
 	local prefix=$2
@@ -62,6 +61,20 @@ parse_yaml() {
 ## Parse yaml
 yaml=$(parse_yaml ${UPTIME_CONF})
 
+## Check if status dir and tracking is enabled 
+if echo "${yaml}" | grep -q 'global_status_dir' 2>/dev/null
+then
+	STATUS_DIR=$(echo "${yaml}" | grep 'global_status_dir' | cut -d '(' -f 2 | sed 's/["()]//g')
+else
+	STATUS_DIR=/tmp/bash_uptime_status
+fi
+
+if echo "${yaml}" | grep 'global_track_status' 2>/dev/null | grep -q 'true'
+then
+	SILENCE_DUPES='true'
+	mkdir -p ${STATUS_DIR}
+fi
+
 ## Check if host is responsive to ping
 ping_check() {
 	ping_hosts=$(echo "${yaml}" | grep 'ping_hosts' | cut -d '(' -f 2 | sed 's/["()]//g')
@@ -72,20 +85,67 @@ ping_check() {
 	then
 		for host in ${ping_hosts}
 		do
+			## If ping silent set in config
 			if [[ ${ping_silent} == "true" ]]
 			then
-				if ping ${ping_options} ${host} >/dev/null
+				if ping ${ping_options} ${host} &>/dev/null
 				then
-					echo "$(date --iso-860=seconds): UP Host ${host} responded to ping"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						outfile="${STATUS_DIR}/${host}_ping"
+						# Check if status file already contains status
+						if ! grep -q ': UP Host' "${outfile}" 2>/dev/null
+						then
+							echo "$(date --iso-860=seconds): UP Host ${host} responded to ping" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): UP Host ${host} responded to ping"
+					fi
 				else
-					echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						outfile="${STATUS_DIR}/${host}_ping"
+						# Check if status file already contains status
+						if ! grep -q ': DOWN Host' "${outfile}" 2>/dev/null
+						then
+							echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping"
+					fi
 				fi
+			## If ping silent not set in config
 			else
 				if ping ${ping_options} ${host}
 				then
-					echo "$(date --iso-860=seconds): UP Host ${host} responsive to ping"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						outfile="${STATUS_DIR}/${host}_ping"
+						# Check if status file already contains status
+						if ! grep -q ': UP Host' "${outfile}" 2>/dev/null
+						then
+							echo "$(date --iso-860=seconds): UP Host ${host} responded to ping" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): UP Host ${host} responded to ping"
+					fi
+
 				else
-					echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						outfile="${STATUS_DIR}/${host}_ping"
+						# Check if status file already contains status
+						if ! grep -q ': DOWN Host' "${outfile}" 2>/dev/null
+						then
+							echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): DOWN Host ${host} unresponsive to ping"
+					fi
 				fi
 			fi
 		done
@@ -102,20 +162,65 @@ curl_check() {
 	then
 		for url in ${curl_urls}
 		do
+			sanitized_url=$(echo "${url}" | awk -F// '{print $NF}')
+			outfile="${STATUS_DIR}/${sanitized_url}_curl"
+			# If curl silent config set
 			if [[ ${curl_silent} == "true" ]]
 			then
-				if curl ${curl_options} "${url}" > /dev/null
+				if curl ${curl_options} "${url}" &> /dev/null
 				then
-					echo "$(date --iso-860=seconds): UP URL ${url} responsive to curl"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						# Check if status file already contains status
+						if ! grep -q ': UP URL' "${outfile}" 2>/dev/null
+						then
+							echo "$(date --iso-860=seconds): UP URL ${url} responded to curl" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): UP URL ${url} responded to curl"
+					fi
 				else
-					echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						# Check if status file already contains status
+						if ! grep -q ': DOWN URL' "${outfile}" 2>/dev/null
+						then
+							## Here
+							echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl"
+					fi
 				fi
+			# If curl silent config not set
 			else	
 				if curl ${curl_options} "${url}" 
 				then
-					echo "$(date --iso-860=seconds): UP URL ${url} responsive to curl"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						# Check if status file already contains status
+						if ! grep -q ': UP URL' "${outfile}" 2>/dev/null
+						then
+							echo "$(date --iso-860=seconds): UP URL ${url} responded to curl" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): UP URL ${url} responded to curl"
+					fi
 				else
-					echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl"
+					# Log status to status file
+					if [[ ${SILENCE_DUPES} == 'true' ]]
+					then
+						# Check if status file already contains status
+						if ! grep -q ': DOWN URL' "${outfile}" 2>/dev/null
+						then
+							echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl" | tee ${outfile}
+						fi
+					else
+						echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl"
+					fi
 				fi
 			fi	
 		done

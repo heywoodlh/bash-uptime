@@ -1,3 +1,6 @@
+global:
+  track_status: true
+  status_dir: "test"
 ping:
   hosts:
     - 1.1.1.1
@@ -9,6 +12,7 @@ curl:
   urls:
     - "http://google.com"
     - "http://bad-garbage-site.net"
+    - "http://localhost:9000"
   options: "-LI --silent"
   silent: "true"
 
