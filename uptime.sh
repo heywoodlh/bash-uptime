@@ -12,7 +12,7 @@ check_dep() {
 	echo "${missing_deps}"
 }
 
-missing_deps=$(check_dep grep awk sed ping curl cut) 
+missing_deps=$(check_dep grep awk sed ping curl cut)
 
 [[ -n ${missing_deps} ]] && echo "Please install the following dependencies: ${missing_deps}" && error="true"
 
@@ -56,12 +56,12 @@ parse_yaml() {
 }
 
 ## Exit if error was encountered
-[[ "${error}" == "true" ]] && exit 1 
+[[ "${error}" == "true" ]] && exit 1
 
 ## Parse yaml
 yaml=$(parse_yaml ${UPTIME_CONF})
 
-## Check if status dir and tracking is enabled 
+## Check if status dir and tracking is enabled
 if echo "${yaml}" | grep -q 'global_status_dir' 2>/dev/null
 then
 	STATUS_DIR=$(echo "${yaml}" | grep 'global_status_dir' | cut -d '(' -f 2 | sed 's/["()]//g')
@@ -78,8 +78,8 @@ fi
 ## Check if host is responsive to ping
 ping_check() {
 	ping_hosts=$(echo "${yaml}" | grep 'ping_hosts' | cut -d '(' -f 2 | sed 's/["()]//g')
-	ping_options=$(echo "${yaml}" | grep 'ping_options' | cut -d '(' -f 2 | sed 's/["()]//g') 
-	ping_silent=$(echo "${yaml}" | grep 'ping_silent' | cut -d '(' -f 2 | sed 's/["()]//g') 
+	ping_options=$(echo "${yaml}" | grep 'ping_options' | cut -d '(' -f 2 | sed 's/["()]//g')
+	ping_silent=$(echo "${yaml}" | grep 'ping_silent' | cut -d '(' -f 2 | sed 's/["()]//g')
 
 	if [[ -n ${ping_hosts} ]]
 	then
@@ -149,7 +149,7 @@ ping_check() {
 				fi
 			fi
 		done
-	fi	
+	fi
 }
 
 ## Check if URL is responsive to curl 
@@ -195,8 +195,8 @@ curl_check() {
 					fi
 				fi
 			# If curl silent config not set
-			else	
-				if curl ${curl_options} "${url}" 
+			else
+				if curl ${curl_options} "${url}"
 				then
 					# Log status to status file
 					if [[ ${SILENCE_DUPES} == 'true' ]]
@@ -222,9 +222,9 @@ curl_check() {
 						echo "$(date --iso-860=seconds): DOWN URL ${url} unresponsive to curl"
 					fi
 				fi
-			fi	
+			fi
 		done
-	fi	
+	fi
 }
 
 ping_check
