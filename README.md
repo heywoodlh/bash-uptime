@@ -7,6 +7,10 @@ This is a ridiculously simple BASH script that relies on common GNU tools to do 
 Create an example config file in `/tmp/uptime.yaml`:
 
 ```
+global:
+  track_status: true
+  status_dir: "test"
+
 ping:
   hosts:
     - 1.1.1.1
@@ -14,11 +18,22 @@ ping:
     - bad-garbage-site.net
   options: "-c 1 -W 1"
   silent: "true"
+
 curl:
   urls:
-    - "http://google.com"
-    - "http://bad-garbage-site.net"
+    - http://google.com
+    - http://bad-garbage-site.net
+    - http://localhost:9000
   options: "-LI --silent"
+  silent: "true"
+
+# Docker image uses busybox netcat
+netcat:
+  # Expects "service:port"
+  services:
+    - google.com:80
+    - bad-garbage-site.net:9090
+  options: "-vz"
   silent: "true"
 ```
 
