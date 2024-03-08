@@ -7,4 +7,4 @@ RUN mkdir -p /app
 COPY uptime.sh /app/uptime.sh
 WORKDIR /app
 
-ENTRYPOINT "/app/uptime.sh" 
+ENTRYPOINT "/app/uptime.sh"
